@@ -1,0 +1,9 @@
+*.a
+*.o
+*.so
+
+.vscode/
+
+bin/*
+!bin/.keep
+
