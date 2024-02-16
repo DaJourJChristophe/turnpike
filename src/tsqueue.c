@@ -14,10 +14,8 @@
 static ts_queue_t *ts_queue_alloc(const size_t cap)
 {
   ts_queue_t *self = NULL;
-  // TODO: Create a wrapper for this allocation call.
-  self = (ts_queue_t *)calloc(1, sizeof(*self));
-  // TODO: Create a wrapper for this allocation call.
-  self->items = (int *)calloc(cap, sizeof(*self->items));
+  self = (ts_queue_t *)_calloc(1, sizeof(*self));
+  self->items = (int *)_calloc(cap, sizeof(*self->items));
   return self;
 }
 
@@ -100,14 +98,13 @@ int *ts_queue_dequeue(ts_queue_t *self)
   }
 
   const uint64_t w = atomic_load(&self->w);
-  const uint64_t r = atomic_load(&self->r);
+  const uint64_t r = atomic_fetch_add(&self->r, 1UL);
 
   if (r == w)
   {
+    atomic_exchange(&self->r, r);
     return NULL;
   }
-
-  atomic_fetch_add(&self->r, 1UL);
 
   int *item = NULL;
   item = (int *)calloc(1, sizeof(*item));

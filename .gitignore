@@ -1,9 +1,14 @@
 *.a
 *.o
 *.so
+*.so.*
 
 .vscode/
 
 bin/*
 !bin/.keep
 
+include/jemalloc
+
+libexec/*
+!libexec/.keep

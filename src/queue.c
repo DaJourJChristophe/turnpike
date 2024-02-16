@@ -14,10 +14,8 @@
 static queue_t *queue_alloc(const size_t cap)
 {
   queue_t *self = NULL;
-  // TODO: Create a wrapper for this allocation call.
-  self = (queue_t *)calloc(1, sizeof(*self));
-  // TODO: Create a wrapper for this allocation call.
-  self->items = (int *)calloc(cap, sizeof(*self->items));
+  self = (queue_t *)_calloc(1, sizeof(*self));
+  self->items = (int *)_calloc(cap, sizeof(*self->items));
   return self;
 }
 
