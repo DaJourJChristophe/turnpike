@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef always_inline
+#define always_inline __attribute__ ((always_inline))
+#endif/*always_inline*/
+
 static void __die(const char *funcname, const char *msg)
 {
   const char fmt[] = "%s(): %s\n";
@@ -27,11 +31,16 @@ static void *_calloc(const size_t nmemb, const size_t size)
   return __ptr;
 }
 
+static void ___free(void *__ptr)
+{
+  dallocx(__ptr, 0);
+}
+
 static void _free(void **__ptr)
 {
   if (NULL != __ptr && NULL != *__ptr)
   {
-    dallocx(*__ptr, 0);
+    ___free(*__ptr);
     *__ptr = NULL;
   }
 }

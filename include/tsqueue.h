@@ -14,10 +14,13 @@
  */
 struct ts_queue
 {
-  int *items;
+  uint8_t *data;
   size_t cap;
-  atomic_ulong r;
-  atomic_ulong w;
+  size_t len;
+  atomic_ulong a_start;
+  atomic_ulong a_end;
+  atomic_ulong b_end;
+  atomic_bool b_inuse;
 };
 
 /**
@@ -29,7 +32,7 @@ typedef struct ts_queue ts_queue_t;
  * @brief Allocate a new Queue data structure to the heap.
  * @param cap The maximum capacity allow in the Queue data structure.
  */
-ts_queue_t *ts_queue_new(const size_t cap);
+ts_queue_t *ts_queue_new(const size_t cap, const size_t len);
 
 /**
  * @brief Deallocate an existing Queue data structure from the heap.
@@ -56,21 +59,21 @@ void __ts_queue_destroy(ts_queue_t **self);
  * @param item The item to be added to the Queue data structure.
  * @return Whether or not the item was successfully added to the Queue.
  */
-bool ts_queue_enqueue(ts_queue_t *self, const int item);
+bool ts_queue_enqueue(ts_queue_t *self, const void *data);
 
 /**
  * @brief Remove an item from the Queue data structure.
  * @param self A pointer to the Queue container.
  * @return The item currently removed from the front of the Queue.
  */
-int *ts_queue_dequeue(ts_queue_t *self);
+void *ts_queue_dequeue(ts_queue_t *self);
 
 /**
  * @brief Return the item at the front of the Queue data structure.
  * @param self A pointer to the Queue container.
  * @return A copy of the item currently at the front of the Queue.
  */
-int *ts_queue_peek(ts_queue_t *self);
+void *ts_queue_peek(ts_queue_t *self);
 
 /**
  * @brief Return the number of items currently in the Queue data structure.
