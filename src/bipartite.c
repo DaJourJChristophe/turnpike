@@ -96,6 +96,13 @@ bool bipartite_queue_enqueue(bipartite_queue_t *self, const void *data)
   if ((w - r) >= self->cap)
   {
     atomic_exchange(&self->w, w);
+
+    if (pthread_mutex_unlock(&self->lock) < 0)
+    {
+      fprintf(stderr, "%s(): %s\n", __func__, "could not unlock mutex");
+      exit(EXIT_FAILURE);
+    }
+
     return false;
   }
 
@@ -135,6 +142,13 @@ void *bipartite_queue_dequeue(bipartite_queue_t *self)
   if (r == w)
   {
     atomic_exchange(&self->r, r);
+
+    if (pthread_mutex_unlock(&self->lock) < 0)
+    {
+      fprintf(stderr, "%s(): %s\n", __func__, "could not unlock mutex");
+      exit(EXIT_FAILURE);
+    }
+
     return NULL;
   }
 
@@ -176,6 +190,12 @@ void *bipartite_queue_peek(bipartite_queue_t *self)
 
   if (r == w)
   {
+    if (pthread_mutex_unlock(&self->lock) < 0)
+    {
+      fprintf(stderr, "%s(): %s\n", __func__, "could not unlock mutex");
+      exit(EXIT_FAILURE);
+    }
+
     return NULL;
   }
 
