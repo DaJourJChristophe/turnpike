@@ -1,9 +1,11 @@
 #include "bipartite.h"
 #include "common.h"
 
+#include <pthread.h>
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -32,6 +34,12 @@ bipartite_queue_t *bipartite_queue_new(const size_t cap, const size_t len)
 {
   bipartite_queue_t *self = NULL;
   self = bipartite_queue_alloc(cap);
+
+  if (pthread_mutex_init(&self->lock, NULL) < 0)
+  {
+    fprintf(stderr, "%s(): %s\n", __func__, "could not init mutex lock");
+    exit(EXIT_FAILURE);
+  }
 
   atomic_init(&self->r, 0UL);
   atomic_init(&self->w, 0UL);
@@ -72,7 +80,14 @@ bool bipartite_queue_enqueue(bipartite_queue_t *self, const void *data)
 {
   if (self == NULL)
   {
-    return false;
+    fprintf(stderr, "%s(): %s\n", __func__, "queue instance may not be null");
+    exit(EXIT_FAILURE);
+  }
+
+  if (pthread_mutex_lock(&self->lock) < 0)
+  {
+    fprintf(stderr, "%s(): %s\n", __func__, "could not lock mutex");
+    exit(EXIT_FAILURE);
   }
 
   const uint64_t r = atomic_load(&self->r);
@@ -86,6 +101,12 @@ bool bipartite_queue_enqueue(bipartite_queue_t *self, const void *data)
 
   memcpy((self->data + (w % self->cap)), data, self->len * sizeof(*self->data));
 
+  if (pthread_mutex_unlock(&self->lock) < 0)
+  {
+    fprintf(stderr, "%s(): %s\n", __func__, "could not unlock mutex");
+    exit(EXIT_FAILURE);
+  }
+
   return true;
 }
 
@@ -98,7 +119,14 @@ void *bipartite_queue_dequeue(bipartite_queue_t *self)
 {
   if (self == NULL)
   {
-    return NULL;
+    fprintf(stderr, "%s(): %s\n", __func__, "queue instance may not be null");
+    exit(EXIT_FAILURE);
+  }
+
+  if (pthread_mutex_lock(&self->lock) < 0)
+  {
+    fprintf(stderr, "%s(): %s\n", __func__, "could not lock mutex");
+    exit(EXIT_FAILURE);
   }
 
   const uint64_t w = atomic_load(&self->w);
@@ -115,6 +143,12 @@ void *bipartite_queue_dequeue(bipartite_queue_t *self)
 
   memcpy(item, (self->data + (r % self->cap)), self->len * sizeof(*self->data));
 
+  if (pthread_mutex_unlock(&self->lock) < 0)
+  {
+    fprintf(stderr, "%s(): %s\n", __func__, "could not unlock mutex");
+    exit(EXIT_FAILURE);
+  }
+
   return item;
 }
 
@@ -127,7 +161,14 @@ void *bipartite_queue_peek(bipartite_queue_t *self)
 {
   if (self == NULL)
   {
-    return NULL;
+    fprintf(stderr, "%s(): %s\n", __func__, "queue instance may not be null");
+    exit(EXIT_FAILURE);
+  }
+
+  if (pthread_mutex_lock(&self->lock) < 0)
+  {
+    fprintf(stderr, "%s(): %s\n", __func__, "could not lock mutex");
+    exit(EXIT_FAILURE);
   }
 
   const uint64_t w = atomic_load(&self->w);
@@ -143,6 +184,12 @@ void *bipartite_queue_peek(bipartite_queue_t *self)
 
   memcpy(item, (self->data + (r % self->cap)), self->len * sizeof(*self->data));
 
+  if (pthread_mutex_unlock(&self->lock) < 0)
+  {
+    fprintf(stderr, "%s(): %s\n", __func__, "could not unlock mutex");
+    exit(EXIT_FAILURE);
+  }
+
   return item;
 }
 
@@ -155,11 +202,24 @@ size_t bipartite_queue_size(bipartite_queue_t *self)
 {
   if (self == NULL)
   {
-    return 0UL;
+    fprintf(stderr, "%s(): %s\n", __func__, "queue instance may not be null");
+    exit(EXIT_FAILURE);
+  }
+
+  if (pthread_mutex_lock(&self->lock) < 0)
+  {
+    fprintf(stderr, "%s(): %s\n", __func__, "could not lock mutex");
+    exit(EXIT_FAILURE);
   }
 
   const uint64_t w = atomic_load(&self->w);
   const uint64_t r = atomic_load(&self->r);
+
+  if (pthread_mutex_unlock(&self->lock) < 0)
+  {
+    fprintf(stderr, "%s(): %s\n", __func__, "could not unlock mutex");
+    exit(EXIT_FAILURE);
+  }
 
   return (w - r);
 }
@@ -173,11 +233,24 @@ bool bipartite_queue_empty(bipartite_queue_t *self)
 {
   if (self == NULL)
   {
-    return false;
+    fprintf(stderr, "%s(): %s\n", __func__, "queue instance may not be null");
+    exit(EXIT_FAILURE);
+  }
+
+  if (pthread_mutex_lock(&self->lock) < 0)
+  {
+    fprintf(stderr, "%s(): %s\n", __func__, "could not lock mutex");
+    exit(EXIT_FAILURE);
   }
 
   const uint64_t w = atomic_load(&self->w);
   const uint64_t r = atomic_load(&self->r);
+
+  if (pthread_mutex_unlock(&self->lock) < 0)
+  {
+    fprintf(stderr, "%s(): %s\n", __func__, "could not unlock mutex");
+    exit(EXIT_FAILURE);
+  }
 
   // Do not call the forward facing queue_size() method here.
   // That method adds redundant overhead to this method call.

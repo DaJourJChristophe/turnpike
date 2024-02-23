@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -64,7 +65,8 @@ static size_t queue_unused(queue_t *self)
 {
   if (self == NULL)
   {
-    return 0;
+    fprintf(stderr, "%s(): %s\n", __func__, "queue instance may not be null");
+    exit(EXIT_FAILURE);
   }
 
   return __queue_unused(self);
@@ -72,11 +74,6 @@ static size_t queue_unused(queue_t *self)
 
 static inline size_t always_inline __queue_used(queue_t *self)
 {
-  if (self == NULL)
-  {
-    return 0;
-  }
-
   return (self->a_end - self->a_start) + self->b_end;
 }
 
@@ -84,7 +81,8 @@ static size_t queue_used(queue_t *self)
 {
   if (self == NULL)
   {
-    return 0;
+    fprintf(stderr, "%s(): %s\n", __func__, "queue instance may not be null");
+    exit(EXIT_FAILURE);
   }
 
   return __queue_used(self);
@@ -112,7 +110,8 @@ bool queue_empty(queue_t *self)
 {
   if (self == NULL)
   {
-    return false;
+    fprintf(stderr, "%s(): %s\n", __func__, "queue instance may not be null");
+    exit(EXIT_FAILURE);
   }
 
   return __queue_empty(self);
@@ -134,7 +133,8 @@ bool queue_enqueue(queue_t *self, const void *data)
 {
   if (self == NULL)
   {
-    return false;
+    fprintf(stderr, "%s(): %s\n", __func__, "queue instance may not be null");
+    exit(EXIT_FAILURE);
   }
 
   if (__queue_unused(self) < self->len)
@@ -166,7 +166,8 @@ void *queue_dequeue(queue_t *self)
 {
   if (self == NULL)
   {
-    return NULL;
+    fprintf(stderr, "%s(): %s\n", __func__, "queue instance may not be null");
+    exit(EXIT_FAILURE);
   }
 
   if (__queue_empty(self))
@@ -214,7 +215,8 @@ void *queue_peek(queue_t *self)
 {
   if (self == NULL)
   {
-    return NULL;
+    fprintf(stderr, "%s(): %s\n", __func__, "queue instance may not be null");
+    exit(EXIT_FAILURE);
   }
 
   if (self->cap < (self->a_start + self->len))
@@ -244,7 +246,8 @@ size_t queue_size(queue_t *self)
 {
   if (self == NULL)
   {
-    return 0UL;
+    fprintf(stderr, "%s(): %s\n", __func__, "queue instance may not be null");
+    exit(EXIT_FAILURE);
   }
 
   return __queue_used(self);

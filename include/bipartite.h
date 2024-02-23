@@ -2,6 +2,7 @@
 #define TURNPIKE__BIPARTITE_H
 
 #include <inttypes.h>
+#include <pthread.h>
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -19,6 +20,7 @@ struct bipartite_queue
   size_t len;
   atomic_ulong r;
   atomic_ulong w;
+  pthread_mutex_t lock;
 };
 
 /**
